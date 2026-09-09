@@ -3,36 +3,45 @@ import {
   SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM,
 } from "@solana/kit";
 import {
-  getVaultErrorMessage,
-  VAULT_ERROR__VAULT_ALREADY_EXISTS,
-  VAULT_ERROR__INVALID_AMOUNT,
-  type VaultError,
-} from "../generated/vault";
+  getPoolErrorMessage,
+  POOL_ERROR__DEPOSIT_TOO_SMALL,
+  POOL_ERROR__INSUFFICIENT_VAULT_BALANCE,
+  POOL_ERROR__INVALID_ROOT,
+  POOL_ERROR__INVALID_VERIFIER,
+  POOL_ERROR__NULLIFIER_SET_FULL,
+  POOL_ERROR__NULLIFIER_USED,
+  POOL_ERROR__RECIPIENT_MISMATCH,
+  POOL_ERROR__TREE_FULL,
+  type PoolError,
+} from "../generated/pool";
 
-const VAULT_ERROR_CODES: Record<number, VaultError> = {
-  [VAULT_ERROR__VAULT_ALREADY_EXISTS]: VAULT_ERROR__VAULT_ALREADY_EXISTS,
-  [VAULT_ERROR__INVALID_AMOUNT]: VAULT_ERROR__INVALID_AMOUNT,
+const POOL_ERROR_CODES: Record<number, PoolError> = {
+  [POOL_ERROR__TREE_FULL]: POOL_ERROR__TREE_FULL,
+  [POOL_ERROR__INVALID_ROOT]: POOL_ERROR__INVALID_ROOT,
+  [POOL_ERROR__NULLIFIER_USED]: POOL_ERROR__NULLIFIER_USED,
+  [POOL_ERROR__DEPOSIT_TOO_SMALL]: POOL_ERROR__DEPOSIT_TOO_SMALL,
+  [POOL_ERROR__NULLIFIER_SET_FULL]: POOL_ERROR__NULLIFIER_SET_FULL,
+  [POOL_ERROR__RECIPIENT_MISMATCH]: POOL_ERROR__RECIPIENT_MISMATCH,
+  [POOL_ERROR__INVALID_VERIFIER]: POOL_ERROR__INVALID_VERIFIER,
+  [POOL_ERROR__INSUFFICIENT_VAULT_BALANCE]:
+    POOL_ERROR__INSUFFICIENT_VAULT_BALANCE,
 };
 
 export function parseTransactionError(err: unknown): string {
-  // Wallet rejection (comes from wallet-standard, not a SolanaError)
   if (err instanceof Error && err.message.includes("User rejected")) {
     return "Transaction was rejected by the wallet.";
   }
 
-  // Anchor custom program errors — use the Codama-generated error messages
   if (
     isSolanaError(err, SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM) &&
     typeof err.context?.code === "number"
   ) {
-    const vaultError = VAULT_ERROR_CODES[err.context.code];
-    if (vaultError !== undefined) {
-      return getVaultErrorMessage(vaultError);
+    const poolError = POOL_ERROR_CODES[err.context.code];
+    if (poolError !== undefined) {
+      return getPoolErrorMessage(poolError);
     }
   }
 
-  // For all other errors, kit's SolanaError already has readable messages.
-  // Walk the cause chain to find the deepest message.
   const message = getDeepestMessage(err);
   return message.length > 200 ? `${message.slice(0, 200)}...` : message;
 }

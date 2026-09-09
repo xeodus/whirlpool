@@ -32,8 +32,8 @@ import {
   type WritableAccount,
   type WritableSignerAccount,
 } from "@solana/kit";
-import { findVaultPda } from "../pdas";
-import { VAULT_PROGRAM_ADDRESS } from "../programs";
+import { findPoolPda, findPoolVaultPda } from "../pdas";
+import { POOL_PROGRAM_ADDRESS } from "../programs";
 import {
   expectAddress,
   getAccountMetaFactory,
@@ -49,9 +49,10 @@ export function getDepositDiscriminatorBytes() {
 }
 
 export type DepositInstruction<
-  TProgram extends string = typeof VAULT_PROGRAM_ADDRESS,
-  TAccountSigner extends string | AccountMeta<string> = string,
-  TAccountVault extends string | AccountMeta<string> = string,
+  TProgram extends string = typeof POOL_PROGRAM_ADDRESS,
+  TAccountPool extends string | AccountMeta<string> = string,
+  TAccountPoolVault extends string | AccountMeta<string> = string,
+  TAccountDepositor extends string | AccountMeta<string> = string,
   TAccountSystemProgram extends string | AccountMeta<string> =
     "11111111111111111111111111111111",
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
@@ -59,13 +60,16 @@ export type DepositInstruction<
   InstructionWithData<ReadonlyUint8Array> &
   InstructionWithAccounts<
     [
-      TAccountSigner extends string
-        ? WritableSignerAccount<TAccountSigner> &
-            AccountSignerMeta<TAccountSigner>
-        : TAccountSigner,
-      TAccountVault extends string
-        ? WritableAccount<TAccountVault>
-        : TAccountVault,
+      TAccountPool extends string
+        ? WritableAccount<TAccountPool>
+        : TAccountPool,
+      TAccountPoolVault extends string
+        ? WritableAccount<TAccountPoolVault>
+        : TAccountPoolVault,
+      TAccountDepositor extends string
+        ? WritableSignerAccount<TAccountDepositor> &
+            AccountSignerMeta<TAccountDepositor>
+        : TAccountDepositor,
       TAccountSystemProgram extends string
         ? ReadonlyAccount<TAccountSystemProgram>
         : TAccountSystemProgram,
@@ -75,15 +79,23 @@ export type DepositInstruction<
 
 export type DepositInstructionData = {
   discriminator: ReadonlyUint8Array;
+  commitment: ReadonlyUint8Array;
+  newRoot: ReadonlyUint8Array;
   amount: bigint;
 };
 
-export type DepositInstructionDataArgs = { amount: number | bigint };
+export type DepositInstructionDataArgs = {
+  commitment: ReadonlyUint8Array;
+  newRoot: ReadonlyUint8Array;
+  amount: number | bigint;
+};
 
 export function getDepositInstructionDataEncoder(): FixedSizeEncoder<DepositInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["commitment", fixEncoderSize(getBytesEncoder(), 32)],
+      ["newRoot", fixEncoderSize(getBytesEncoder(), 32)],
       ["amount", getU64Encoder()],
     ]),
     (value) => ({ ...value, discriminator: DEPOSIT_DISCRIMINATOR }),
@@ -93,6 +105,8 @@ export function getDepositInstructionDataEncoder(): FixedSizeEncoder<DepositInst
 export function getDepositInstructionDataDecoder(): FixedSizeDecoder<DepositInstructionData> {
   return getStructDecoder([
     ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["commitment", fixDecoderSize(getBytesDecoder(), 32)],
+    ["newRoot", fixDecoderSize(getBytesDecoder(), 32)],
     ["amount", getU64Decoder()],
   ]);
 }
@@ -108,43 +122,51 @@ export function getDepositInstructionDataCodec(): FixedSizeCodec<
 }
 
 export type DepositAsyncInput<
-  TAccountSigner extends string = string,
-  TAccountVault extends string = string,
+  TAccountPool extends string = string,
+  TAccountPoolVault extends string = string,
+  TAccountDepositor extends string = string,
   TAccountSystemProgram extends string = string,
 > = {
-  signer: TransactionSigner<TAccountSigner>;
-  vault?: Address<TAccountVault>;
+  pool?: Address<TAccountPool>;
+  poolVault?: Address<TAccountPoolVault>;
+  depositor: TransactionSigner<TAccountDepositor>;
   systemProgram?: Address<TAccountSystemProgram>;
+  commitment: DepositInstructionDataArgs["commitment"];
+  newRoot: DepositInstructionDataArgs["newRoot"];
   amount: DepositInstructionDataArgs["amount"];
 };
 
 export async function getDepositInstructionAsync<
-  TAccountSigner extends string,
-  TAccountVault extends string,
+  TAccountPool extends string,
+  TAccountPoolVault extends string,
+  TAccountDepositor extends string,
   TAccountSystemProgram extends string,
-  TProgramAddress extends Address = typeof VAULT_PROGRAM_ADDRESS,
+  TProgramAddress extends Address = typeof POOL_PROGRAM_ADDRESS,
 >(
   input: DepositAsyncInput<
-    TAccountSigner,
-    TAccountVault,
+    TAccountPool,
+    TAccountPoolVault,
+    TAccountDepositor,
     TAccountSystemProgram
   >,
   config?: { programAddress?: TProgramAddress },
 ): Promise<
   DepositInstruction<
     TProgramAddress,
-    TAccountSigner,
-    TAccountVault,
+    TAccountPool,
+    TAccountPoolVault,
+    TAccountDepositor,
     TAccountSystemProgram
   >
 > {
   // Program address.
-  const programAddress = config?.programAddress ?? VAULT_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? POOL_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
-    signer: { value: input.signer ?? null, isWritable: true },
-    vault: { value: input.vault ?? null, isWritable: true },
+    pool: { value: input.pool ?? null, isWritable: true },
+    poolVault: { value: input.poolVault ?? null, isWritable: true },
+    depositor: { value: input.depositor ?? null, isWritable: true },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
@@ -156,9 +178,12 @@ export async function getDepositInstructionAsync<
   const args = { ...input };
 
   // Resolve default values.
-  if (!accounts.vault.value) {
-    accounts.vault.value = await findVaultPda({
-      signer: expectAddress(accounts.signer.value),
+  if (!accounts.pool.value) {
+    accounts.pool.value = await findPoolPda();
+  }
+  if (!accounts.poolVault.value) {
+    accounts.poolVault.value = await findPoolVaultPda({
+      pool: expectAddress(accounts.pool.value),
     });
   }
   if (!accounts.systemProgram.value) {
@@ -169,8 +194,9 @@ export async function getDepositInstructionAsync<
   const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   return Object.freeze({
     accounts: [
-      getAccountMeta(accounts.signer),
-      getAccountMeta(accounts.vault),
+      getAccountMeta(accounts.pool),
+      getAccountMeta(accounts.poolVault),
+      getAccountMeta(accounts.depositor),
       getAccountMeta(accounts.systemProgram),
     ],
     data: getDepositInstructionDataEncoder().encode(
@@ -179,44 +205,57 @@ export async function getDepositInstructionAsync<
     programAddress,
   } as DepositInstruction<
     TProgramAddress,
-    TAccountSigner,
-    TAccountVault,
+    TAccountPool,
+    TAccountPoolVault,
+    TAccountDepositor,
     TAccountSystemProgram
   >);
 }
 
 export type DepositInput<
-  TAccountSigner extends string = string,
-  TAccountVault extends string = string,
+  TAccountPool extends string = string,
+  TAccountPoolVault extends string = string,
+  TAccountDepositor extends string = string,
   TAccountSystemProgram extends string = string,
 > = {
-  signer: TransactionSigner<TAccountSigner>;
-  vault: Address<TAccountVault>;
+  pool: Address<TAccountPool>;
+  poolVault: Address<TAccountPoolVault>;
+  depositor: TransactionSigner<TAccountDepositor>;
   systemProgram?: Address<TAccountSystemProgram>;
+  commitment: DepositInstructionDataArgs["commitment"];
+  newRoot: DepositInstructionDataArgs["newRoot"];
   amount: DepositInstructionDataArgs["amount"];
 };
 
 export function getDepositInstruction<
-  TAccountSigner extends string,
-  TAccountVault extends string,
+  TAccountPool extends string,
+  TAccountPoolVault extends string,
+  TAccountDepositor extends string,
   TAccountSystemProgram extends string,
-  TProgramAddress extends Address = typeof VAULT_PROGRAM_ADDRESS,
+  TProgramAddress extends Address = typeof POOL_PROGRAM_ADDRESS,
 >(
-  input: DepositInput<TAccountSigner, TAccountVault, TAccountSystemProgram>,
+  input: DepositInput<
+    TAccountPool,
+    TAccountPoolVault,
+    TAccountDepositor,
+    TAccountSystemProgram
+  >,
   config?: { programAddress?: TProgramAddress },
 ): DepositInstruction<
   TProgramAddress,
-  TAccountSigner,
-  TAccountVault,
+  TAccountPool,
+  TAccountPoolVault,
+  TAccountDepositor,
   TAccountSystemProgram
 > {
   // Program address.
-  const programAddress = config?.programAddress ?? VAULT_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? POOL_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
-    signer: { value: input.signer ?? null, isWritable: true },
-    vault: { value: input.vault ?? null, isWritable: true },
+    pool: { value: input.pool ?? null, isWritable: true },
+    poolVault: { value: input.poolVault ?? null, isWritable: true },
+    depositor: { value: input.depositor ?? null, isWritable: true },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
@@ -236,8 +275,9 @@ export function getDepositInstruction<
   const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   return Object.freeze({
     accounts: [
-      getAccountMeta(accounts.signer),
-      getAccountMeta(accounts.vault),
+      getAccountMeta(accounts.pool),
+      getAccountMeta(accounts.poolVault),
+      getAccountMeta(accounts.depositor),
       getAccountMeta(accounts.systemProgram),
     ],
     data: getDepositInstructionDataEncoder().encode(
@@ -246,21 +286,23 @@ export function getDepositInstruction<
     programAddress,
   } as DepositInstruction<
     TProgramAddress,
-    TAccountSigner,
-    TAccountVault,
+    TAccountPool,
+    TAccountPoolVault,
+    TAccountDepositor,
     TAccountSystemProgram
   >);
 }
 
 export type ParsedDepositInstruction<
-  TProgram extends string = typeof VAULT_PROGRAM_ADDRESS,
+  TProgram extends string = typeof POOL_PROGRAM_ADDRESS,
   TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
-    signer: TAccountMetas[0];
-    vault: TAccountMetas[1];
-    systemProgram: TAccountMetas[2];
+    pool: TAccountMetas[0];
+    poolVault: TAccountMetas[1];
+    depositor: TAccountMetas[2];
+    systemProgram: TAccountMetas[3];
   };
   data: DepositInstructionData;
 };
@@ -273,7 +315,7 @@ export function parseDepositInstruction<
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>,
 ): ParsedDepositInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 3) {
+  if (instruction.accounts.length < 4) {
     // TODO: Coded error.
     throw new Error("Not enough accounts");
   }
@@ -286,8 +328,9 @@ export function parseDepositInstruction<
   return {
     programAddress: instruction.programAddress,
     accounts: {
-      signer: getNextAccount(),
-      vault: getNextAccount(),
+      pool: getNextAccount(),
+      poolVault: getNextAccount(),
+      depositor: getNextAccount(),
       systemProgram: getNextAccount(),
     },
     data: getDepositInstructionDataDecoder().decode(instruction.data),
