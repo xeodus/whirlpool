@@ -3,11 +3,10 @@ use anchor_lang::solana_program::instruction::Instruction;
 use anchor_lang::solana_program::program::invoke;
 use anchor_lang::system_program::{transfer, Transfer};
 
-declare_id!("DdncuHP8vWDqS2qzLB8zz5xZPYEQPtPEg9Rop9qYPzCk");
+declare_id!("43DNw4sTLdv1o8M3a5RhfxfJti4t7U5KUtwuRJ3V55mv");
 
 /// Replace after `sunspot deploy` + `solana program deploy` of the verifier.
-pub const SUNSPOT_VERIFIER_ID: Pubkey =
-    pubkey!("G6ZGZt9iJqejZBdSh4EMXrYiUXkCtedrzxsjorwSm7Un");
+pub const SUNSPOT_VERIFIER_ID: Pubkey = pubkey!("G6ZGZt9iJqejZBdSh4EMXrYiUXkCtedrzxsjorwSm7Un");
 pub const TREE_DEPTH: usize = 10;
 pub const MAX_LEAVES: u64 = 1 << TREE_DEPTH;
 pub const MIN_DEPOSIT_AMOUNT: u64 = 1_000_000;
