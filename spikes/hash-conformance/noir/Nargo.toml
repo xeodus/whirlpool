@@ -1,0 +1,8 @@
+[package]
+name = "noir"
+type = "bin"
+authors = [""]
+compiler_version = ">=1.0.0"
+
+[dependencies]
+poseidon = { git = "https://github.com/noir-lang/poseidon", tag = "v0.4.0" }

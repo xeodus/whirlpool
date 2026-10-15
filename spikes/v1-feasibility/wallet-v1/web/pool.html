@@ -1,0 +1,13 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Whirlpool Devnet feasibility</title>
+<style>body{font:16px system-ui;max-width:860px;margin:2rem auto;padding:0 1rem}button{padding:.65rem;margin:.25rem}textarea{width:100%;height:8rem}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f5f5f5;padding:1rem}</style>
+<h1>Whirlpool Devnet feasibility</h1>
+<p>Throwaway research keys and program. The test phrases are public; never use this page for real funds. Proofs are made in this browser. The server receives only public proof instructions and signed transactions.</p>
+<p>Program <code>FLRDX…12F9</code>, pool <code>862h…YJ8N</code>. Actions: shield 0.01 Devnet SOL; private transfer 0.006 payment, 0.003 change, 0.001 fee; revoked current-holder public exit 0.006 to Jupiter.</p>
+<button id="connect">Connect Jupiter</button>
+<button id="shield">Prove shield</button><button id="transfer">Recover and prove transfer</button>
+<button id="exit">Recover and prove recipient exit</button><button id="exit_change">Recover and prove change exit</button>
+<p>To prove exit in a fresh Firefox profile, copy the proof instruction below and paste it here in Brave:</p>
+<textarea id="proof" spellcheck="false" placeholder="Proof instruction (base64)"></textarea>
+<button id="import">Import proof instruction</button><button id="send" disabled>Simulate, review, sign and send once</button>
+<pre id="status">No action prepared.</pre>
+<script src="/snarkjs.js"></script><script src="/pool.js"></script></html>

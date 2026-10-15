@@ -1,0 +1,19 @@
+{
+  "name": "whirlpool-v1-gate-01",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "prove": "node scripts/prove.mjs",
+    "encode": "node scripts/encode.mjs",
+    "serve": "node scripts/serve.mjs"
+  },
+  "dependencies": {
+    "circom2": "0.2.23",
+    "snarkjs": "0.7.6"
+  },
+  "overrides": {
+    "underscore": "1.13.8"
+  }
+}

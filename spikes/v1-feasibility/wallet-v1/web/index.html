@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Whirlpool Devnet v1 compatibility check</title>
+<style>
+  body { font: 16px system-ui, sans-serif; max-width: 48rem; margin: 3rem auto; padding: 0 1rem; line-height: 1.5; }
+  button { font: inherit; padding: .6rem 1rem; margin: .4rem .4rem .4rem 0; }
+  pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 1rem; background: #f4f4f4; }
+</style>
+<h1>Devnet v1 compatibility check</h1>
+<p>This research page connects to Jupiter Wallet and simulates a proof-sized v1 Memo transaction on Devnet. The one approved signing test completed and finalized; both submission paths are disabled. The Memo contains public filler only; it tests transaction format and RPC acceptance, not Whirlpool custody or proof verification.</p>
+<button id="connect">Connect Jupiter</button>
+<button id="prepare" disabled>Prepare and simulate</button>
+<button id="send" hidden>Sign and send one Devnet Memo</button>
+<button id="sign-only" hidden>Sign with Jupiter, broadcast via Devnet RPC</button>
+<pre id="status">No wallet connected.</pre>
+<script src="/browser.js"></script>
+</html>

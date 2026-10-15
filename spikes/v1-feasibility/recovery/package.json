@@ -1,0 +1,19 @@
+{
+  "name": "whirlpool-recovery-research",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node test.mjs && node history.test.mjs",
+    "bundle": "esbuild src/recovery.mjs --bundle --format=esm --platform=browser --outfile=generated/recovery.bundle.js && esbuild src/browser-journey.mjs --bundle --format=iife --platform=browser --outfile=generated/browser-journey.js && esbuild src/wallet-check.mjs --bundle --format=iife --platform=browser --outfile=generated/wallet-check.js"
+  },
+  "dependencies": {
+    "@hpke/core": "1.9.0",
+    "@scure/bip39": "2.2.0",
+    "@wallet-standard/app": "1.1.1",
+    "poseidon-lite": "0.3.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

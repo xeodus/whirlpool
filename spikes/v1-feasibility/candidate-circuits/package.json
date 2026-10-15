@@ -1,0 +1,25 @@
+{
+  "name": "whirlpool-v1-candidate-circuits",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "compile": "node scripts/compile.mjs",
+    "inputs": "node scripts/inputs.mjs",
+    "witness": "node scripts/witness.mjs",
+    "setup": "node scripts/setup.mjs",
+    "prove": "node scripts/prove.mjs",
+    "encode": "node scripts/encode-solana.mjs",
+    "negative": "node scripts/negative.mjs",
+    "serve": "node scripts/serve.mjs"
+  },
+  "dependencies": {
+    "circom2": "0.2.23",
+    "circomlib": "2.0.5",
+    "poseidon-lite": "0.3.0",
+    "snarkjs": "0.7.6"
+  },
+  "overrides": {
+    "underscore": "1.13.8"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "whirlpool-wallet-v1-feasibility",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "bundle": "esbuild src/browser.mjs --bundle --format=iife --platform=browser --outfile=generated/browser.js",
+    "bundle:funding": "esbuild src/funding-browser.mjs --bundle --format=iife --platform=browser --outfile=generated/funding.js",
+    "serve:funding": "node scripts/serve-funding.mjs",
+    "bundle:pool": "esbuild src/pool-browser.mjs --bundle --format=iife --platform=browser --outfile=generated/pool.js",
+    "serve:pool": "node scripts/serve-pool.mjs",
+    "serve": "node scripts/serve.mjs"
+  },
+  "dependencies": {
+    "@solana/kit": "8.5.0",
+    "@wallet-standard/app": "1.1.1"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

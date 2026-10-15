@@ -1,0 +1,14 @@
+{
+  "name": "@whirlpool/protocol-client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test" },
+  "dependencies": {
+    "@hpke/core": "1.9.0",
+    "@scure/bip39": "2.2.0",
+    "@solana/kit": "8.5.0",
+    "@whirlpool/approval-tree": "file:../approval-tree",
+    "poseidon-lite": "0.3.0"
+  }
+}

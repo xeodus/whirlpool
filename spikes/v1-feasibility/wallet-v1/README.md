@@ -1,0 +1,9 @@
+# Browser wallet v1 compatibility check
+
+This isolated research harness checks Jupiter Wallet's Wallet Standard discovery and Solana Devnet's handling of a 1,510-byte v1 transaction. Its only instruction is a public Memo. It does not exercise Whirlpool proofs or custody. Jupiter's `signAndSendTransaction` broadcast returned HTTP 500 and repeated chain readbacks found no Memo. The user approved a different route on 15 October 2026: Jupiter signed locally, then this loopback server validated the exact fixed Memo and Ed25519 signature before one public Devnet RPC broadcast. That transaction finalized successfully; both submission paths are now disabled in source.
+
+Run `npm ci`, `npm test`, `npm run bundle`, then `npm run serve`. Open the printed loopback URL in Brave with a fresh Jupiter test account. Click **Connect Jupiter** and **Prepare and simulate**. The server proxies only four read-only methods to public Devnet RPC: blockhash, balance, fee, and unsigned simulation. Do not put an RPC credential or recovery phrase in this page.
+
+`src/transaction.mjs` uses Solana Kit 8's v1 message config. The Memo carries a visible marker and public filler, no secrets or funds. The test checks the v1 prefix, 1,232–4,096-byte range, and absent signature. The independent `node scripts/simulate.mjs <public-devnet-address>` check succeeded at 464,282 CU with a 5,000-lamport estimated fee; the user reproduced it in Brave. Jupiter signed the exact transaction. `node scripts/readback.mjs <public-devnet-address>` independently found finalized signature `dWK8UFzFN3vDnMZooEznU5qxHQYEgo4jETC2tbzqfkntM1A3uRu9hTirbDQV9Jksk6u33fMBK5raeXXkXr6x6DP` at slot 511216105, v1, 1,510 bytes, no execution error, exact Memo, and 5,000 lamports charged. This establishes wallet signing and public RPC acceptance for an inert Memo only.
+
+Reference: [Solana v1 transaction format and wallet checks](https://solana.com/docs/core/transactions/versioned-transactions).

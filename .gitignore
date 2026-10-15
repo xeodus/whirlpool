@@ -19,6 +19,10 @@ node_modules/
 
 # production
 /build
+/apps/web/dist/
+/programs/sol-pool/target/
+/spikes/**/target/
+/spikes/**/generated/
 
 # misc
 .DS_Store

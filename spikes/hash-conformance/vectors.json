@@ -1,0 +1,25 @@
+{
+  "note": "Canonical Poseidon(BN254, x^5) vectors. All implementations MUST reproduce these exactly. Do not edit by hand.",
+  "inputs": {
+    "small.1": "[1]",
+    "small.2": "[1,2]",
+    "small.3": "[1,2,3]",
+    "small.4": "[1,2,3,4]",
+    "large.2": "[0xdeadbeef, 0x123456789abcdef0]",
+    "zeros.0": "0",
+    "zeros.n": "H(zeros.n-1, zeros.n-1)"
+  },
+  "vectors": {
+    "small.1": "0x29176100eaa962bdc1fe6c654d6a3c130e96a4d1168b33848b897dc502820133",
+    "small.2": "0x115cc0f5e7d690413df64c6b9662e9cf2a3617f2743245519e19607a4417189a",
+    "small.3": "0x0e7732d89e6939c0ff03d5e58dab6302f3230e269dc5b968f725df34ab36d732",
+    "small.4": "0x299c867db6c1fdd79dcefa40e4510b9837e60ebb1ce0663dbaa525df65250465",
+    "large.2": "0x1da3ab0bb581b96ab03767238b37efb974b689a3cfc3e4b2571c4d032f2e7d25",
+    "zeros.0": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "zeros.1": "0x2098f5fb9e239eab3ceac3f27b81e481dc3124d55ffed523a839ee8446b64864",
+    "zeros.2": "0x1069673dcdb12263df301a6ff584a7ec261a44cb9dc68df067a4774460b1f1e1",
+    "zeros.3": "0x18f43331537ee2af2e3d758d50f72106467c6eea50371dd528d57eb2b856d238",
+    "zeros.4": "0x07f9d837cb17b0d36320ffe93ba52345f1b728571a568265caac97559dbc952a",
+    "zeros.5": "0x2b94cf5e8746b3f5c9631f4c5df32907a699c58c94b2ad4d7b5cec1639183f55"
+  }
+}
